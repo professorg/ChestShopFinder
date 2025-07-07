@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "id": "chestshopfinder",
+  "version": "${version}",
+  "name": "ChestShopFinder",
+  "description": "Find Chest Shops in the world and display information about them!",
+  "authors": [
+    "ProfessorG"
+  ],
+  "contact": {
+    "homepage": "https://fabricmc.net/",
+    "sources": "https://github.com/ProfessorG/ChestShopFinder"
+  },
+  "license": "CC0-1.0",
+  "icon": "assets/chestshopfinder/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "dev.kosdt.chestshopfinder.fabric.ChestShopFinderFabric"
+    ],
+    "client": [
+      "dev.kosdt.chestshopfinder.fabric.client.ChestShopFinderFabricClient"
+    ]
+  },
+  "mixins": [
+    "chestshopfinder.mixins.json"
+  ],
+  "acessWidener": "chestshopfinder.accesswidener",
+  "depends": {
+    "fabricloader": ">=0.16.14",
+    "minecraft": "~1.21.1",
+    "java": ">=21",
+    "architectury": ">=13.0.8"
+  },
+  "suggests": {
+    "another-mod": "*"
+  }
+}
