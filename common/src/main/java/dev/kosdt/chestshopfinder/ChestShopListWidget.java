@@ -7,12 +7,13 @@ import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.widget.ElementListWidget;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 public class ChestShopListWidget extends ElementListWidget<ChestShopListWidget.ChestShopWidget> {
 
@@ -21,7 +22,7 @@ public class ChestShopListWidget extends ElementListWidget<ChestShopListWidget.C
 
     protected String filterText;
     protected List<ChestShopListWidget.ChestShopWidget> shopEntries;
-    protected Stream<ChestShopWidget> shopEntriesView;
+    protected List<ChestShopListWidget.ChestShopWidget> shopEntriesView;
 
     public ChestShopListWidget(MinecraftClient minecraftClient, int width, int height, int y,
         List<ChestShop> shops, String filterText) {
@@ -29,7 +30,7 @@ public class ChestShopListWidget extends ElementListWidget<ChestShopListWidget.C
         textRenderer = minecraftClient.textRenderer;
         this.shopEntries = chestShopWidgetsList(shops);
         this.filterText = filterText;
-        shopEntriesView = shopEntries.stream();
+        shopEntriesView = new ArrayList<>(shopEntries);
     }
 
     public static Comparator<ChestShopWidget> liftComparator(Comparator<ChestShop> comparator) {
@@ -54,34 +55,44 @@ public class ChestShopListWidget extends ElementListWidget<ChestShopListWidget.C
     }
 
     public void updateList(List<ChestShop> shops) {
-        replaceEntries(chestShopWidgetsList(shops));
+        shopEntries = chestShopWidgetsList(shops);
         updateFilter();
         updateView();
     }
 
     public void updateFilter() {
         shopEntriesView = shopEntries.stream()
-                .filter(liftPredicate(c -> c.searchTextMatches(filterText)));
+                .filter(liftPredicate(c -> c.searchTextMatches(filterText)))
+                .collect(Collectors.toList());
     }
 
     public void sortBy(Comparator<ChestShop> comparator) {
         updateFilter();
-        shopEntriesView = shopEntriesView.sorted(liftComparator(comparator));
+        shopEntriesView.sort(liftComparator(comparator));
         updateView();
     }
 
     public void updateView() {
-        replaceEntries(shopEntriesView.toList());
+        ChestShopWidget selected = getSelectedOrNull();
+        replaceEntries(shopEntriesView);
+
+        if (children().contains(selected)) {
+            setSelected(selected);
+        } else {
+            setSelected(null);
+        }
+
         if (!isScrollbarVisible()) {
             setScrollAmount(0.0);
-        } else if (getSelectedOrNull() != null) {
-            centerScrollOn(getSelectedOrNull());
+        } else if ((selected = getSelectedOrNull()) != null) {
+            centerScrollOn(selected);
         }
     }
 
     public class ChestShopWidget extends ElementListWidget.Entry<ChestShopWidget> {
 
         protected ChestShop chestShop;
+        private static final int BORDER = 2;
 
         public ChestShopWidget(ChestShop chestShop) {
             this.chestShop = chestShop;
@@ -91,7 +102,7 @@ public class ChestShopListWidget extends ElementListWidget<ChestShopListWidget.C
         public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             int h = textRenderer.fontHeight;
             if (getSelectedOrNull() == this) {
-                context.drawBorder(x, y, entryWidth, entryHeight, 0xAA555555);
+                context.drawBorder(x-BORDER, y-BORDER, entryWidth+2*BORDER, 5*textRenderer.fontHeight+2*BORDER, 0xAA555555);
             }
             context.drawTextWithShadow(textRenderer, chestShop.player, x, y, 0xAACCCCCC);
             context.drawTextWithShadow(textRenderer, String.valueOf(chestShop.amount), x, y + h, 0xAACCCCCC);
@@ -105,6 +116,8 @@ public class ChestShopListWidget extends ElementListWidget<ChestShopListWidget.C
             super.mouseClicked(mouseX, mouseY, button);
             if (isMouseOver(mouseX, mouseY)) {
                 setSelected(this);
+            } else {
+                setSelected(null);
             }
             return true;
         }
