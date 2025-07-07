@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.IntStream;
 
 import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.block.entity.SignText;
@@ -135,10 +136,14 @@ public class ChestShop {
      */
     public static boolean isAChestShopPreliminary(SignBlockEntity sign) {
         SignText signText = sign.getText(true);
-        return !signText.getMessage(0, true).getLiteralString().isEmpty()
-                && signText.getMessage(1, true).getLiteralString().matches("\\d+") // I'm sorry
-                && PRICES_PATTERN.asMatchPredicate().test(signText.getMessage(2, true).getLiteralString())
-                && !signText.getMessage(3, true).getLiteralString().isEmpty();
+        String[] lines = IntStream.range(0, 4)
+                .mapToObj(i -> signText.getMessage(i, true).getLiteralString())
+                .toArray(String[]::new);
+        return lines[0] != null && lines[1] != null && lines[2] != null && lines[3] != null
+                && !lines[0].isEmpty()
+                && lines[1].matches("\\d+") // I'm sorry
+                && PRICES_PATTERN.asMatchPredicate().test(lines[2])
+                && !lines[3].isEmpty();
     }
 
     public static ChestShop fromSignChecked(SignBlockEntity sign) {

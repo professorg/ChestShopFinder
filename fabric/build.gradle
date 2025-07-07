@@ -40,6 +40,12 @@ dependencies {
 processResources {
     inputs.property 'version', project.version
 
+    processResources {
+        from(rootProject.file("common/src/main/resources")) {
+            include("chestshopfinder.accesswidener")
+        }
+    }
+
     filesMatching('fabric.mod.json') {
         expand version: project.version
     }

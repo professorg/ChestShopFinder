@@ -147,6 +147,7 @@ public class ChestShopFinderGui extends Screen {
 
     private void updateFilteredChestShops() {
         mChestShopListWidget.filterText = mTextFieldSearchBox.getText();
+        mChestShopListWidget.updateFilter();
         mChestShopListWidget.updateView();
     }
 }
